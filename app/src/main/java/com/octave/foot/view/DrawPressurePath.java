@@ -5,14 +5,17 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.octave.foot.ImageUtils;
 import com.octave.foot.R;
@@ -30,10 +33,8 @@ public class DrawPressurePath extends View {
     private float mX;
     private float mY;
     //View宽高
-    private int mWidth;
-    private int mHeight;
-    //计数器
-    private int count = 0;
+    private float mWidth;
+    private float mHeight;
     //画笔
     private final Paint mGesturePaint = new Paint();
     //路径
@@ -55,20 +56,21 @@ public class DrawPressurePath extends View {
     public DrawPressurePath(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        initAttrs(attrs);
         mGesturePaint.setAntiAlias(true);
         mGesturePaint.setStyle(Paint.Style.STROKE);
-        mGesturePaint.setStrokeWidth(5);
+        mGesturePaint.setStrokeWidth(2);
         mGesturePaint.setColor(Color.BLACK);
-//        dm = context.getResources().getDisplayMetrics();
-//        mWidth = dm.widthPixels;
-//        mHeight = dm.heightPixels;
-        data = file.readExcel("left_foot.xls");
-//        mX = data.get(0).getX() + mWidth / 2;
-//        mY = mHeight / 2 - data.get(0).getY();
-//        mPath.moveTo(mX, mY);
+        initAttrs(attrs);
     }
-
+    private void initPoint(){
+        data = file.readExcel("left_foot.xls");
+        mX = data.get(0).getX();
+        mY = data.get(0).getY();
+        mPath.moveTo(mX, mY);
+        for (int i = 1; i < data.size(); i++) {
+            pointRead(data.get(i));
+        }
+    }
     private void initAttrs(AttributeSet attrs) {
         if (attrs != null) {
             TypedArray array = null;
@@ -76,8 +78,8 @@ public class DrawPressurePath extends View {
                 array = getContext().obtainStyledAttributes(attrs, R.styleable.DrawPressurePath);
                 mDrawable = array.getDrawable(R.styleable.DrawPressurePath_src);
                 measureDrawable();
-            }finally {
-                if(array!=null)
+            } finally {
+                if (array != null)
                     array.recycle();
             }
         }
@@ -87,22 +89,21 @@ public class DrawPressurePath extends View {
         if (mDrawable == null) {
             throw new RuntimeException("drawable 不能为空");
         }
-        mWidth = mDrawable.getIntrinsicWidth();
-        mHeight = mDrawable.getIntrinsicHeight();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //获取宽度的模式与大小
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int width = getMeasuredWidth();
         //获取高度的模式与大小
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        setMeasuredDimension(measureWidth(widthMode, width), measureHeight(heightMode, height));
+        int height = getMeasuredHeight();
+        setMeasuredDimension((int)measureWidth(widthMode, width), (int)measureHeight(heightMode, height));
     }
 
-    private int measureHeight(int mode, int height) {
+    private float measureHeight(int mode, int height) {
         switch (mode) {
             case MeasureSpec.UNSPECIFIED:
                 break;
@@ -115,7 +116,7 @@ public class DrawPressurePath extends View {
         return mHeight;
     }
 
-    private int measureWidth(int mode, int width) {
+    private float measureWidth(int mode, int width) {
         switch (mode) {
             case MeasureSpec.UNSPECIFIED:
                 break;
@@ -132,19 +133,26 @@ public class DrawPressurePath extends View {
     protected void onDraw(Canvas canvas) {
         // TODO Auto-generated method stub
         super.onDraw(canvas);
+        initPoint();
         if (mBitmap == null) {
             mBitmap = Bitmap.createScaledBitmap(
-                    drawableToBitamp(mDrawable),
+                    drawableToBitmap(mDrawable),
                     getMeasuredWidth(), getMeasuredHeight(), true);
+            System.out.println("----onDraw----" + getMeasuredWidth() + " " + getMeasuredHeight());
         }
-        canvas.drawBitmap(mBitmap, getLeft(), getTop(), mGesturePaint);
-        for (int i = 0; i < data.size(); i++) {
-            pointRead(data.get(i));
-            //通过画布绘制多点形成的图形
-            canvas.drawPath(mPath, mGesturePaint);
-        }
+        //加入一个矩阵，用于追至翻转画布
+        Matrix matrix = new Matrix();
+        matrix.setScale(1, -1);
+        matrix.postTranslate(0, mBitmap.getHeight());
+        canvas.setMatrix(matrix);
+        canvas.drawBitmap(mBitmap,getLeft(),getTop(), mGesturePaint);
+        canvas.scale(3f,3f);
+        canvas.translate(100,20);
+        canvas.drawPath(mPath, mGesturePaint);
+
     }
-    private Bitmap drawableToBitamp(Drawable drawable) {
+
+    private Bitmap drawableToBitmap(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bd = (BitmapDrawable) drawable;
             return bd.getBitmap();
@@ -157,12 +165,10 @@ public class DrawPressurePath extends View {
         drawable.draw(canvas);
         return bitmap;
     }
+
     private void pointRead(CenterOfPressure cop) {
-        final float x = mWidth / 2 + cop.getX();
-        final float y = mHeight / 2 - cop.getY();
-        mPath.moveTo(x, y);
-        System.out.println(count + ":" + x + "=" + mWidth / 2 + "+" + cop.getX() + "-------" + y + "=" + mHeight / 2 + "-" + cop.getY());
-        count++;
+        final float x = cop.getX();
+        final float y = cop.getY();
         final float previousX = mX;
         final float previousY = mY;
 

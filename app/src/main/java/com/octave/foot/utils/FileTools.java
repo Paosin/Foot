@@ -21,9 +21,8 @@ import jxl.read.biff.BiffException;
  */
 
 public class FileTools {
-    private String sdPath(String path) {
-        String state = Environment.getExternalStorageState();
-        if (state.equals(Environment.MEDIA_MOUNTED)) {
+    public String sdPath(String path) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File sdFile = Environment.getExternalStorageDirectory();
             String filePath = sdFile.getAbsolutePath();
             return filePath + "/" + path;
