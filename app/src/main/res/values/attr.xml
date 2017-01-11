@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="DrawPressurePath">
         <attr name="src" format="integer" />
+        <attr name="path" format="string" />
     </declare-styleable>
 </resources>

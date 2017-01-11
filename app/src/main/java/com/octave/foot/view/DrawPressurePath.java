@@ -22,6 +22,7 @@ import com.octave.foot.R;
 import com.octave.foot.bean.CenterOfPressure;
 import com.octave.foot.utils.FileTools;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,7 +48,9 @@ public class DrawPressurePath extends View {
     private FileTools file = new FileTools();
     //获取View宽高的第一个方法，没用
     private DisplayMetrics dm = new DisplayMetrics();
-    List<CenterOfPressure> data;
+    List<CenterOfPressure> data=new ArrayList<CenterOfPressure>();
+
+    private String mFilePath;
 
     public DrawPressurePath(Context context) {
         this(context, null);
@@ -62,26 +65,27 @@ public class DrawPressurePath extends View {
         mGesturePaint.setColor(Color.BLACK);
         initAttrs(attrs);
     }
-    private void initPoint(){
-        data = file.readExcel("left_foot.xls");
-        mX = data.get(0).getX();
-        mY = data.get(0).getY();
-        mPath.moveTo(mX, mY);
-        for (int i = 1; i < data.size(); i++) {
-            pointRead(data.get(i));
-        }
-    }
     private void initAttrs(AttributeSet attrs) {
         if (attrs != null) {
             TypedArray array = null;
             try {
                 array = getContext().obtainStyledAttributes(attrs, R.styleable.DrawPressurePath);
                 mDrawable = array.getDrawable(R.styleable.DrawPressurePath_src);
+                mFilePath = array.getString(R.styleable.DrawPressurePath_path);
                 measureDrawable();
             } finally {
                 if (array != null)
                     array.recycle();
             }
+        }
+    }
+    private void initPoint(float measureHeight){
+        data = file.readExcel(mFilePath);
+        mX = data.get(0).getX();
+        mY = data.get(0).getY();
+        mPath.moveTo(mX, mY);
+        for (int i = 1; i < data.size(); i++) {
+            pointRead(data.get(i),measureHeight);
         }
     }
 
@@ -108,6 +112,7 @@ public class DrawPressurePath extends View {
             case MeasureSpec.UNSPECIFIED:
                 break;
             case MeasureSpec.AT_MOST:
+                mHeight = height;
                 break;
             case MeasureSpec.EXACTLY:
                 mHeight = height;
@@ -121,6 +126,7 @@ public class DrawPressurePath extends View {
             case MeasureSpec.UNSPECIFIED:
                 break;
             case MeasureSpec.AT_MOST:
+                mWidth=width;
                 break;
             case MeasureSpec.EXACTLY:
                 mWidth = width;
@@ -133,23 +139,23 @@ public class DrawPressurePath extends View {
     protected void onDraw(Canvas canvas) {
         // TODO Auto-generated method stub
         super.onDraw(canvas);
-        initPoint();
         if (mBitmap == null) {
             mBitmap = Bitmap.createScaledBitmap(
                     drawableToBitmap(mDrawable),
                     getMeasuredWidth(), getMeasuredHeight(), true);
-            System.out.println("----onDraw----" + getMeasuredWidth() + " " + getMeasuredHeight());
         }
-        //加入一个矩阵，用于追至翻转画布
-        Matrix matrix = new Matrix();
-        matrix.setScale(1, -1);
-        matrix.postTranslate(0, mBitmap.getHeight());
-        canvas.setMatrix(matrix);
-        canvas.drawBitmap(mBitmap,getLeft(),getTop(), mGesturePaint);
-        canvas.scale(3f,3f);
-        canvas.translate(100,20);
-        canvas.drawPath(mPath, mGesturePaint);
+        Matrix matrix = this.getMatrix();
+        int[] location = new int[2];
+        this.getLocationOnScreen(location);
+        canvas.drawBitmap(mBitmap,0,0, mGesturePaint);
+        initPoint(getMeasuredHeight());
+        float multiple=(6*(mBitmap.getHeight()/11))/(data.get(data.size()-1).getY()-data.get(0).getY());;
 
+        //加入一个矩阵，用于翻转画布
+        matrix.postScale(multiple,-multiple);
+        matrix.postTranslate(getMeasuredWidth()/2, getMeasuredHeight()*0.83f);
+        mPath.transform(matrix);
+        canvas.drawPath(mPath, mGesturePaint);
     }
 
     private Bitmap drawableToBitmap(Drawable drawable) {
@@ -166,12 +172,12 @@ public class DrawPressurePath extends View {
         return bitmap;
     }
 
-    private void pointRead(CenterOfPressure cop) {
+    private void pointRead(CenterOfPressure cop,float measureHeight) {
         final float x = cop.getX();
         final float y = cop.getY();
         final float previousX = mX;
         final float previousY = mY;
-
+//        System.out.println(cop.getFrame()+" x:"+x+"-----y:"+y);
         final float dx = Math.abs(x - previousX);
         final float dy = Math.abs(y - previousY);
         //两点之间的距离大于等于3时，生成贝塞尔绘制曲线
@@ -186,5 +192,14 @@ public class DrawPressurePath extends View {
             mX = x;
             mY = y;
         }
+//        mPath.lineTo(x, y);
+//        mX = x;
+//        mY = y;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        return true;
     }
 }

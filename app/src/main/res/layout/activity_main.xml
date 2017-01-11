@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:img="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <com.octave.foot.view.DrawPressurePath
-        android:layout_width="200dp"
-        android:layout_height="350dp"
-        img:src="@drawable/leftfoot" />
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
 
+    <com.octave.foot.view.DrawPressurePath
+        android:id="@+id/left"
+        android:layout_width="100dp"
+        android:layout_height="175dp"
+        app:path="left_foot.xls"
+        app:src="@drawable/leftfoot" />
+
+    <com.octave.foot.view.DrawPressurePath
+        android:id="@+id/right"
+        android:layout_width="100dp"
+        android:layout_height="175dp"
+        app:path="right_foot.xls"
+        app:src="@drawable/rightfoot" />
 </LinearLayout>
