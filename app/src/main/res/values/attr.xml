@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="DrawPressurePath">
-        <attr name="src" format="integer" />
-        <attr name="path" format="string" />
+        <attr name="backgroundsrc" format="integer" />
+        <attr name="filepath" format="string" />
+        <attr name="lineweight" format="dimension" />
     </declare-styleable>
 </resources>
