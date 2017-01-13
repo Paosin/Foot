@@ -20,9 +20,11 @@ import com.octave.foot.R;
 import com.octave.foot.bean.CenterOfPressure;
 import com.octave.foot.utils.FileTools;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * SurfaceView多线程刷新
  * Created by Paosin Von Scarlet on 2017/1/11.
  */
 
@@ -43,12 +45,13 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
     private Bitmap mBitmap;
     //图片Drawable
     private Drawable mDrawable;
+    //-----------------------------
     //读取Excel的工具
     private FileTools file = new FileTools();
-    private List<CenterOfPressure> data;
-
+    private List<CenterOfPressure> data = new ArrayList<CenterOfPressure>();
+    //xls文件名，默认数据放置在/storage/emulated/0/目录下
     private String mFilePath;
-
+    //-----------------------------
     private SurfaceHolder mHolder;
     private Canvas mCanvas;
 
@@ -74,9 +77,8 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
         //设置常量
         setKeepScreenOn(true);
         setZOrderOnTop(true);
-
+        //初始化控件View属性
         initAttrs(attrs);
-        initPoint();
     }
 
     //初始化属性
@@ -86,7 +88,7 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
             try {
                 array = getContext().obtainStyledAttributes(attrs, R.styleable.DrawPressurePath);
                 mDrawable = array.getDrawable(R.styleable.DrawPressurePath_backgroundsrc);
-                mFilePath = array.getString(R.styleable.DrawPressurePath_filepath);
+//                mFilePath = array.getString(R.styleable.DrawPressurePath_filepath);
                 //dp,sp都会乘desity,px直接等于
                 mDimension = (int) array.getDimension(R.styleable.DrawPressurePath_lineweight, 6);
                 measureDrawable();
@@ -97,12 +99,41 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
         }
     }
 
+    //初始化点坐标
+    public void initPoint(List<CenterOfPressure> path) {
+        //读取Excel用的
+//        mFilePath = path;
+//        data = file.readExcel(mFilePath);
+        mPath.reset();
+        data = path;
+        if (data.size() != 0) {
+            mX = data.get(0).getX();
+            mY = data.get(0).getY();
+            mPath.moveTo(mX, mY);
+            for (int i = 1; i < data.size(); i++) {
+                pointRead(data.get(i));
+            }
+        }
+        //获取View高度以及数据最后一个点的Y坐标，计算绘制图像的放大倍率
+        multiple = (6 * (getMeasuredHeight() / 11)) / (data.get(data.size() - 1).getY() - data.get(0).getY());
+        /**
+         * 仅在SerfaceView中测试
+         * Matrix要对Path进行矩阵变换时，应该只变换一次，即在初始化坐标的时候
+         * 如果在Draw()里面transform，会疯狂的进行变换，鬼知道为啥
+         * 如果要一个点一个点的画，就不能只变化一次，具体咋弄还不知道
+         * View中没测试
+         */
+        Matrix matrix = new Matrix();
+        matrix.postScale(multiple, -multiple);
+        matrix.postTranslate(getMeasuredWidth() / 2, getMeasuredHeight() * 0.83f);
+        mPath.transform(matrix);
+    }
+
     private void pointRead(CenterOfPressure cop) {
         final float x = cop.getX();
         final float y = cop.getY();
         final float previousX = mX;
         final float previousY = mY;
-//        System.out.println(cop.getFrame()+" x:"+x+"-----y:"+y);
         final float dx = Math.abs(x - previousX);
         final float dy = Math.abs(y - previousY);
         //两点之间的距离大于等于3时，生成贝塞尔绘制曲线
@@ -122,21 +153,16 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
 //        mY = y;
     }
 
-    private void draw() {
-        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+    private void drawBitmap() {
         if (mBitmap == null) {
             mBitmap = Bitmap.createScaledBitmap(
                     drawableToBitmap(mDrawable),
                     getMeasuredWidth(), getMeasuredHeight(), true);
-            multiple = (6 * (mBitmap.getHeight() / 11)) / (data.get(data.size() - 1).getY() - data.get(0).getY());
         }
-        Matrix matrix = this.getMatrix();
         mCanvas.drawBitmap(mBitmap, 0, 0, mGesturePaint);
+    }
 
-        //加入一个矩阵，用于翻转画布
-        matrix.postScale(multiple, -multiple);
-        matrix.postTranslate(getMeasuredWidth() / 2, getMeasuredHeight() * 0.83f);
-        mPath.transform(matrix);
+    public void drawPath() {
         mCanvas.drawPath(mPath, mGesturePaint);
     }
 
@@ -177,42 +203,35 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
     @Override
     public void run() {
         //不断进行绘制
-        if (isRunning) {
+        long t=0;
+        while (isRunning) {
+            //每100ms刷新一次
+            t = System.currentTimeMillis();
             drawSurface();
+            try {
+                Thread.sleep(Math.max(0, 100 - (System.currentTimeMillis() - t)));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void drawSurface() {
-        try {
-            mCanvas = mHolder.lockCanvas();
-            if (mCanvas != null) {
-                long start = System.currentTimeMillis();
-                draw();
-                long end = System.currentTimeMillis();
-                if (end - start < 100) {
-                    try {
-                        Thread.sleep(100 - end + start);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+        synchronized (mHolder) {
+            try {
+                mCanvas = mHolder.lockCanvas();
+                mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                drawBitmap();
+                //如果没有数据就不绘制
+                if (data.size() != 0)
+                    drawPath();
+            } finally {
+                if (mCanvas != null)
+                    mHolder.unlockCanvasAndPost(mCanvas);
             }
-        } finally {
-            if (mCanvas != null)
-                mHolder.unlockCanvasAndPost(mCanvas);
         }
     }
 
-    //初始化点坐标
-    private void initPoint() {
-        data = file.readExcel(mFilePath);
-        mX = data.get(0).getX();
-        mY = data.get(0).getY();
-        mPath.moveTo(mX, mY);
-        for (int i = 1; i < data.size(); i++) {
-            pointRead(data.get(i));
-        }
-    }
     //测量Drawable长宽
     private void measureDrawable() {
         if (mDrawable == null) {

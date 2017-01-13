@@ -10,7 +10,6 @@
         android:id="@+id/left"
         android:layout_width="200dp"
         android:layout_height="350dp"
-        app:filepath="left_foot.xls"
         app:backgroundsrc="@drawable/leftfoot"
         app:lineweight="2dp"/>
 
@@ -18,7 +17,6 @@
         android:id="@+id/right"
         android:layout_width="200dp"
         android:layout_height="350dp"
-        app:filepath="right_foot.xls"
         app:backgroundsrc="@drawable/rightfoot"
         app:lineweight="3dp"/>
 </LinearLayout>

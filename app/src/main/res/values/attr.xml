@@ -2,7 +2,6 @@
 <resources>
     <declare-styleable name="DrawPressurePath">
         <attr name="backgroundsrc" format="integer" />
-        <attr name="filepath" format="string" />
         <attr name="lineweight" format="dimension" />
     </declare-styleable>
 </resources>
