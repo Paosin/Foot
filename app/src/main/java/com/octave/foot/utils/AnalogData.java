@@ -1,6 +1,6 @@
 package com.octave.foot.utils;
 
-import com.octave.foot.bean.CenterOfPressure;
+import com.octave.foot.beans.CenterOfPressure;
 
 import java.util.ArrayList;
 import java.util.List;

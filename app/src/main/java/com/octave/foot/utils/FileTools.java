@@ -1,16 +1,14 @@
 package com.octave.foot.utils;
 
 import android.os.Environment;
-import android.util.Log;
 
-import com.octave.foot.bean.CenterOfPressure;
+import com.octave.foot.beans.CenterOfPressure;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;

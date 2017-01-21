@@ -1,4 +1,4 @@
-package com.octave.foot.bean;
+package com.octave.foot.beans;
 
 /**
  * Created by Paosin Von Scarlet on 2017/1/9.

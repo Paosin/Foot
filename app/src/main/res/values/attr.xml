@@ -3,5 +3,7 @@
     <declare-styleable name="DrawPressurePath">
         <attr name="backgroundsrc" format="integer" />
         <attr name="lineweight" format="dimension" />
+        <attr name="antialias" format="boolean" />
+        <attr name="linecolor" format="color" />
     </declare-styleable>
 </resources>

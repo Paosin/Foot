@@ -1,4 +1,4 @@
-package com.octave.foot.view;
+package com.octave.foot.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -17,7 +17,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.octave.foot.R;
-import com.octave.foot.bean.CenterOfPressure;
+import com.octave.foot.beans.CenterOfPressure;
 import com.octave.foot.utils.FileTools;
 
 import java.util.ArrayList;
@@ -37,9 +37,11 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
     private float mHeight;
     //画笔
     private final Paint mGesturePaint = new Paint();
+    private boolean isAntiAlias;    //是否开启抗锯齿
+    private int mColorInt;      //笔刷颜色
+    private int mDimension;     //线宽度
     //路径
     private final Path mPath = new Path();
-    private int mDimension;     //线宽度
     private float multiple;     //根据绘图选取倍数
     //要绘制的图片
     private Bitmap mBitmap;
@@ -91,6 +93,8 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
 //                mFilePath = array.getString(R.styleable.DrawPressurePath_filepath);
                 //dp,sp都会乘desity,px直接等于
                 mDimension = (int) array.getDimension(R.styleable.DrawPressurePath_lineweight, 6);
+                mColorInt = array.getColor(R.styleable.DrawPressurePath_linecolor, Color.BLACK);
+                isAntiAlias = array.getBoolean(R.styleable.DrawPressurePath_antialias, true);
                 measureDrawable();
             } finally {
                 if (array != null)
@@ -180,10 +184,10 @@ public class DrawPressurePath extends SurfaceView implements SurfaceHolder.Callb
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        mGesturePaint.setAntiAlias(true);
+        mGesturePaint.setAntiAlias(isAntiAlias);
         mGesturePaint.setStyle(Paint.Style.STROKE);
         mGesturePaint.setStrokeWidth(mDimension);
-        mGesturePaint.setColor(Color.BLACK);
+        mGesturePaint.setColor(mColorInt);
 
         isRunning = true;
         mThread = new Thread(this);

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Foot</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="datashow_data_title">数据展示</string>
+    <string name="datashow_pic_title">图片展示</string>
 </resources>

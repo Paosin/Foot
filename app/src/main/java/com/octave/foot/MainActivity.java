@@ -1,12 +1,14 @@
 package com.octave.foot;
 
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
-import com.octave.foot.bean.CenterOfPressure;
-import com.octave.foot.utils.AnalogData;
-import com.octave.foot.view.DrawPressurePath;
+import com.octave.foot.adapter.DataFragmentAdapter;
+import com.octave.foot.fragments.DataShowFragment;
+import com.octave.foot.fragments.PicShowFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,37 +18,30 @@ import butterknife.ButterKnife;
 
 
 public class MainActivity extends AppCompatActivity {
-    @Bind(R.id.left)
-    DrawPressurePath mLeft;
-    @Bind(R.id.right)
-    DrawPressurePath mRight;
 
-    private Handler mHandler;
+    @Bind(R.id.tabs)
+    TabLayout mTab;
+    @Bind(R.id.viewpager)
+    ViewPager mViewPager;
+
+    private List<Fragment> mFragments = new ArrayList<Fragment>();
+    private List<String> mTitles = new ArrayList<String>();
+    private DataFragmentAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 //        getSupportActionBar().hide();
+        mTitles.add(getResources().getString(R.string.datashow_data_title));
+        mTitles.add(getResources().getString(R.string.datashow_pic_title));
+        mFragments.add(new DataShowFragment());
+        mFragments.add(new PicShowFragment());
 
-        mHandler = new Handler();
-        //为两个控件开启两个线程，测试以不同的速率传输不同的值到两个控件刷新正误
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                AnalogData a = new AnalogData();
-                mLeft.initPoint(a.getData());
-                mHandler.postDelayed(this, 3000);
-            }
-        });
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                AnalogData a = new AnalogData();
-                mRight.initPoint(a.getData());
-                mHandler.postDelayed(this, 2000);
-            }
-        });
+        adapter = new DataFragmentAdapter(getSupportFragmentManager(), mFragments, mTitles);
+        mViewPager.setAdapter(adapter);
+        mTab.setupWithViewPager(mViewPager);
     }
 
     @Override
