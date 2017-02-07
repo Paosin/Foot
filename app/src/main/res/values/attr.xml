@@ -4,6 +4,11 @@
         <attr name="backgroundsrc" format="integer" />
         <attr name="lineweight" format="dimension" />
         <attr name="antialias" format="boolean" />
-        <attr name="linecolor" format="color" />
+        <attr name="draw_color" format="color" />
+        <attr name="isflip_horizontal" format="boolean" />
+        <attr name="drawmode">
+            <enum name="draw_line" value="1" />
+            <enum name="draw_point" value="0" />
+        </attr>
     </declare-styleable>
 </resources>

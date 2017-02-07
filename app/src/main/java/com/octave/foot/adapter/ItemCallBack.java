@@ -140,4 +140,9 @@ public class ItemCallBack extends ItemTouchHelper.Callback {
     public boolean isItemViewSwipeEnabled() {
         return false;
     }
+
+    @Override
+    public int interpolateOutOfBoundsScroll(RecyclerView recyclerView, int viewSize, int viewSizeOutOfBounds, int totalSize, long msSinceStartScroll) {
+        return super.interpolateOutOfBoundsScroll(recyclerView, viewSize, viewSizeOutOfBounds, totalSize, msSinceStartScroll);
+    }
 }

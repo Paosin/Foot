@@ -1,29 +1,37 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="horizontal"
-    >
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="23333333"/>-->
-    <com.octave.foot.views.DrawPressurePath
-        android:id="@+id/left"
-        android:layout_width="wrap_content"
-        android:layout_height="350dp"
-        android:layout_weight="1"
-        app:backgroundsrc="@drawable/leftfoot"
-        app:lineweight="2dp"/>
+    android:layout_height="match_parent">
 
-    <com.octave.foot.views.DrawPressurePath
-        android:id="@+id/right"
-        android:layout_width="wrap_content"
-        android:layout_height="350dp"
-        android:layout_weight="1"
-        app:backgroundsrc="@drawable/rightfoot"
-        app:linecolor="@color/colorPrimary"
-        app:antialias="false"
-        app:lineweight="3dp"/>
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.octave.foot.views.DrawPressurePath
+            android:id="@+id/left"
+            app:backgroundsrc="@drawable/leftfoot"
+            app:draw_color="@color/white"
+            app:drawmode="draw_point"
+            app:lineweight="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="350dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp" />
+
+        <com.octave.foot.views.DrawPressurePath
+            android:id="@+id/right"
+            app:antialias="false"
+            app:backgroundsrc="@drawable/rightfoot"
+            app:draw_color="@color/white"
+            app:drawmode="draw_point"
+            app:lineweight="3dp"
+            app:isflip_horizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="350dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"/>
+    </LinearLayout>
+</android.support.v4.widget.NestedScrollView>

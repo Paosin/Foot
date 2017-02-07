@@ -1,8 +1,10 @@
 package com.octave.foot.fragments;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import com.octave.foot.utils.AnalogData;
 import com.octave.foot.views.DrawPressurePath;
 
 import butterknife.Bind;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -47,10 +50,17 @@ public class PicShowFragment extends Fragment {
                 AnalogData a = new AnalogData();
                 mLeft.initPoint(a.getData());
                 mHandler.postDelayed(this, 3000);
+                float[] p = new float[9];
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                mLeft.initRect(p);
                 StepCount++;
-                mHandler.obtainMessage(SUCCESS_ADD_STEPCOUNT, StepCount);
+                DataShowFragment.handler.sendEmptyMessage(StepCount);
             }
         });
+
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -58,9 +68,18 @@ public class PicShowFragment extends Fragment {
                 mRight.initPoint(a.getData());
                 mHandler.postDelayed(this, 2000);
                 StepCount++;
-                mHandler.obtainMessage(SUCCESS_ADD_STEPCOUNT, StepCount);
+                DataShowFragment.handler.sendEmptyMessage(StepCount);
+                float[] p = new float[9];
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                p[AnalogData.getRandom(0, 8)] = AnalogData.getRandom(0, 20);
+                mRight.initRect(p);
+//                DrawPressurePath.handler.sendEmptyMessage(AnalogData.getRandom(0, 8));
+//                mRight.setmRectColor(Color.GREEN,AnalogData.getRandom(0, 8));
             }
         });
+        //发送消息绘制矩形
         return view;
     }
 
